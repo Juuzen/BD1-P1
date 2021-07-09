@@ -36,8 +36,7 @@ public class CapocantiereDao implements Dao<Capocantiere, Integer> {
                     String surname = resultSet.getString("surname");
                     String fiscalCode = resultSet.getString("fiscalCode");
                     Integer id = resultSet.getInt("id");
-                    @Nullable
-                    Integer cantiereId;
+                    @Nullable Integer cantiereId;
                     int cantId = resultSet.getInt("cantiere_id");
                     if (cantId == 0) cantiereId = NULL;
                     else cantiereId = cantId;
@@ -90,7 +89,38 @@ public class CapocantiereDao implements Dao<Capocantiere, Integer> {
 
     @Override
     public Optional<Integer> save(Capocantiere capocantiere) {
-        return Optional.empty();
+        AtomicReference<Optional<Integer>> insertedKey = new AtomicReference<>(Optional.empty());
+        Optional<Connection> connection = JdbcConnection.getConnection();
+
+        connection.ifPresent(conn -> {
+            String query = "INSERT INTO "
+                    + "capocantiere(username, password, name, surname, fiscal_code, cantiere_id) "
+                    + "VALUES (?, crypt(?, gen_salt('bf')), ?, ?, ?, ?)";
+
+            try (PreparedStatement statement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+                statement.setString(1, capocantiere.getUsername());
+                statement.setString(2, capocantiere.getPassword());
+                statement.setString(3, capocantiere.getName());
+                statement.setString(4, capocantiere.getSurname());
+                statement.setString(5, capocantiere.getFiscalCode());
+                @Nullable Integer cId = capocantiere.getCantiereId();
+                if (cId == null) statement.setNull(6, Types.INTEGER);
+                else statement.setInt(6, cId);
+
+                int insertedRows = statement.executeUpdate();
+                if (insertedRows > 0) {
+                    ResultSet resultSet = statement.getGeneratedKeys();
+                    if (resultSet.next()) {
+                        insertedKey.set(Optional.of(resultSet.getInt(1)));
+                    }
+                }
+
+            } catch (SQLException ex) {
+                LOGGER.log(Level.SEVERE, "SAVE-CAPOCANTIERE", ex);
+            }
+        });
+
+        return insertedKey.get();
     }
 
     @Override
