@@ -2,3 +2,7 @@
 BD1.iml
 
 .idea/
+
+*.class
+
+out/production/BD1/lib/postgresql-42.2.23.jar
