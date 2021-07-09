@@ -101,7 +101,7 @@ public class AdminDao implements Dao<Admin, String> {
 
     }
 
-    public boolean login(Admin admin) {
+    public boolean login(String username, String password) {
         AtomicBoolean response = new AtomicBoolean(false);
         Optional<Connection> connection = JdbcConnection.getConnection();
 
@@ -109,8 +109,8 @@ public class AdminDao implements Dao<Admin, String> {
             String query = "SELECT username FROM admin WHERE username = ? AND password = crypt(?, password)";
 
             try (PreparedStatement statement = conn.prepareStatement(query)) {
-                statement.setString(1, admin.getUsername());
-                statement.setString(2, admin.getPassword());
+                statement.setString(1, username);
+                statement.setString(2, password);
                 ResultSet resultSet = statement.executeQuery();
 
                 if (resultSet.next()) {
