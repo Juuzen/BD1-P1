@@ -1,5 +1,7 @@
+package gui;
+
 import dao.AdminDao;
-import model.Admin;
+import dao.CapocantiereDao;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,19 +37,26 @@ public class LoginGUI extends JFrame {
             if (!(String.valueOf(password).isEmpty() || username.isEmpty())) {
                 switch (roleCombobox.getSelectedIndex()) {
                     case 0 -> {
-                        Admin admin = new Admin(username, String.valueOf(password));
                         AdminDao adminDao = new AdminDao();
-                        if (adminDao.login(admin)) {
-                            JOptionPane.showMessageDialog(frame, "Benvenuto admin " + admin.getUsername() + ".");
+                        if (adminDao.login(username, String.valueOf(password))) {
+                            JOptionPane.showMessageDialog(frame, "Benvenuto admin " + username + ".");
                         } else {
                             JOptionPane.showMessageDialog(frame, "Accesso non consentito.");
                         }
                     }
 
-                    case 1 ->
-                            JOptionPane.showMessageDialog(frame, "Accesso alla tabella CAPOCANTIERE.");
+                    case 1 -> {
+                        CapocantiereDao ccDao = new CapocantiereDao();
+                        if (ccDao.login(username, String.valueOf(password))) {
+                            JOptionPane.showMessageDialog(frame, "Benvenuto capocantiere " + username + ".");
+                        } else {
+                            JOptionPane.showMessageDialog(frame, "Accesso non consentito.");
+                        }
+
+                    }
+
                     default ->
-                            JOptionPane.showMessageDialog(frame, "Accesso errato.");
+                            JOptionPane.showMessageDialog(frame, "Accesso non consentito.");
                 }
             }
         });
